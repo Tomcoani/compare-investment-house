@@ -636,8 +636,8 @@
     <div style="height:32px"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <div class="results-title">📊 תוצאות ההשוואה</div>
-      <button onclick="shareResults(event)" style="display:flex;align-items:center;gap:7px;background:var(--surface2);color:var(--accent);border:1.5px solid var(--accent);border-radius:10px;font-family:Heebo,sans-serif;font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
-        🔗 שתף תוצאות
+      <button onclick="shareResults()" style="display:flex;align-items:center;gap:7px;background:var(--surface2);color:var(--accent);border:1.5px solid var(--accent);border-radius:10px;font-family:Heebo,sans-serif;font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+        📲 שתף בווטסאפ
       </button>
     </div>
     <div class="results-sub" id="results-sub"></div>
@@ -1260,62 +1260,12 @@ function resetAll() {
 }
 
 // ==================== SHARE ====================
-function shareResults(event) {
-  const url = window.location.href.split('?')[0];
-  const sub = document.getElementById('results-sub').textContent;
-  const winner = document.getElementById('winner-name').textContent;
-
-  const text = `📊 השוואת עמלות בתי השקעות
-${winner}
-${sub}
-
-נוצר עם המחשבון של Tom Ani:
-${url}`;
-
-  const btn = event ? event.currentTarget : null;
-
-  function showCopied() {
-    if (!btn) return;
-    const orig = btn.innerHTML;
-    btn.innerHTML = '✅ הועתק!';
-    btn.style.background = 'rgba(63,185,80,0.15)';
-    btn.style.borderColor = '#3fb950';
-    btn.style.color = '#3fb950';
-    setTimeout(() => {
-      btn.innerHTML = orig;
-      btn.style.background = 'var(--surface2)';
-      btn.style.borderColor = 'var(--accent)';
-      btn.style.color = 'var(--accent)';
-    }, 2000);
-  }
-
-  if (navigator.share) {
-    navigator.share({ title: 'השוואת עמלות בתי השקעות', text }).catch(() => {});
-  } else if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(showCopied).catch(() => {
-      // Fallback for Safari in iframe
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try { document.execCommand('copy'); showCopied(); } catch(e) {}
-      document.body.removeChild(ta);
-    });
-  } else {
-    // Safari iframe fallback
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    try { document.execCommand('copy'); showCopied(); } catch(e) {}
-    document.body.removeChild(ta);
-  }
+function shareResults() {
+  var sub = document.getElementById('results-sub').textContent;
+  var winner = document.getElementById('winner-name').textContent;
+  var url = 'https://bejewelled-semolina-4b36de.netlify.app/';
+  var msg = '📊 השוואת עמלות בתי השקעות\n' + winner + '\n' + sub + '\n\nנוצר עם המחשבון של Tom Ani:\n' + url;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 </script>
 <script>
