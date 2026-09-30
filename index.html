@@ -803,7 +803,6 @@ function setYears(y) {
 }
 
 // ==================== ELIGIBILITY ====================
-document.getElementById('initial').addEventListener('input', checkEligibility);
 function checkEligibility() {
   const initial = readNum('initial', 0);
   const el = document.getElementById('eligibility-alert');
@@ -1205,6 +1204,8 @@ function attachFormatting(id) {
     // Restore cursor position
     const newLen = this.value.length;
     this.selectionStart = this.selectionEnd = pos + (newLen - oldLen);
+    // עדכן בדיקת זכאות אחרי עיצוב הספרות
+    if (id === 'initial') checkEligibility();
   });
 }
 
