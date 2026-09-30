@@ -539,7 +539,7 @@
     </div>
     <div class="input-group">
       <label>סכום ראשוני (₪)</label>
-      <input type="text" inputmode="numeric" pattern="[0-9.]*" id="initial" min="0" value="" placeholder="לדוגמה: 50000">
+      <input type="text" inputmode="numeric" pattern="[0-9.]*" id="initial" min="0" value="" placeholder="לדוגמה: 50000" oninput="checkEligibility()">
     </div>
     <div id="eligibility-alert"></div>
   </div>
@@ -888,12 +888,13 @@ function calcHouse(h, params) {
   };
 }
 
+function readNum(id, fallback) {
+  const v = (document.getElementById(id).value || '').toString().replace(/[^0-9.]/g, '');
+  const n = parseFloat(v);
+  return isNaN(n) ? (fallback || 0) : n;
+}
+
 function calculate() {
-  function readNum(id, fallback) {
-    const v = (document.getElementById(id).value || '').toString().replace(/[^0-9.]/g, '');
-    const n = parseFloat(v);
-    return isNaN(n) ? (fallback || 0) : n;
-  }
   const initial   = readNum('initial', 0);
   const monthly   = readNum('monthly', 0);
   const il_amount = readNum('il_amount', 0);
