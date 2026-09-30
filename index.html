@@ -507,8 +507,9 @@
   <!-- NOTES -->
   <div style="background:rgba(45,212,191,0.06);border:1px solid rgba(45,212,191,0.2);border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:13px;line-height:1.75;color:#e6edf3;">
     <div style="font-weight:700;color:#2dd4bf;margin-bottom:8px;">📌 לפני שמתחילים — חשוב לדעת</div>
-    <div>1. מינימום ההשקעה הנדרש לפתיחת חשבון בבתי ההשקעות הישראלים (מיטב, אקסלנס, פסגות) הוא כ-<strong>10,000 ₪</strong>.</div>
-    <div style="margin-top:4px">2. <strong>אינטרקטיב ישראל</strong> — אין מינימום השקעה, אך <strong>אין אפשרות לסחור בבורסה הישראלית</strong>. מתאים למי שמשקיע רק בניירות ערך זרים (ארה"ב וכו').</div>
+    <div>1. מינימום ההשקעה הנדרש לפתיחת חשבון בבתי ההשקעות הישראלים (מיטב, פסגות) הוא כ-<strong>10,000 ₪</strong>.</div>
+    <div style="margin-top:4px">2. <strong>אקסלנס — מבצע מיוחד עד 31/12/2026:</strong> ניתן להצטרף כבר מ-<strong>₪4,500</strong> בלבד. מצטרפים עם <strong>₪10,000 ומעלה</strong> מקבלים <strong>פטור מדמי ניהול לכל החיים</strong>! 🎉</div>
+    <div style="margin-top:4px">3. <strong>אינטרקטיב ישראל</strong> — אין מינימום השקעה, אך <strong>אין אפשרות לסחור בבורסה הישראלית</strong>. מתאים למי שמשקיע רק בניירות ערך זרים (ארה"ב וכו').</div>
   </div>
 
   <!-- STEP 1 -->
@@ -745,13 +746,14 @@ const HOUSES = [
     id: 'excellence',
     name: 'אקסלנס',
     color: '#ff6b35',
-    min_investment: 10000,
+    min_investment: 4500,
     fee_il_pct: 0.0007,      // 0.07%
     fee_il_min_nis: 3,       // מינימום ₪3
     fee_us_min_usd: 6,       // מינימום $6 לפעולה
     mgmt_monthly_nis: 15,    // דמי ניהול ₪15/חודש
     mgmt_offsets_trades: true, // מתקזז עם עמלות
-    mgmt_free_years: 3,      // פטור 3 שנים
+    mgmt_free_years: 3,      // פטור 3 שנים (אחרת)
+    mgmt_free_forever_above: 10000, // פטור לכל החיים אם הפקדה ראשונית >= 10k
     join_bonus_nis: 100,     // מתנת ₪100
     has_il_market: true
   },
@@ -803,14 +805,15 @@ function setYears(y) {
 // ==================== ELIGIBILITY ====================
 document.getElementById('initial').addEventListener('input', checkEligibility);
 function checkEligibility() {
-  const initial = +document.getElementById('initial').value || 0;
+  const initial = readNum('initial', 0);
   const el = document.getElementById('eligibility-alert');
   if (initial === 0) { el.innerHTML = ''; return; }
-  const min = 10000;
-  if (initial < min) {
-    el.innerHTML = `<div class="alert alert-warn">⚠️ סכום זה נמוך מהמינימום של מיטב, אקסלנס ופסגות (${min.toLocaleString()} ₪). תוכלו לפתוח חשבון רק באינטרקטיב ישראל.</div>`;
+  if (initial < 4500) {
+    el.innerHTML = `<div class="alert alert-warn">⚠️ סכום זה נמוך מהמינימום של כל בתי ההשקעות. מינימום אקסלנס: ₪4,500 (מבצע עד 31/12/2026); מינימום מיטב ופסגות: ₪10,000.</div>`;
+  } else if (initial < 10000) {
+    el.innerHTML = `<div class="alert alert-info" style="background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.3);color:#2dd4bf;border-radius:9px;padding:11px 15px;font-size:13px;font-weight:500;">🎉 סכום זה מתאים לאקסלנס (מבצע עד 31/12/2026). מיטב ופסגות דורשות מינימום ₪10,000.</div>`;
   } else {
-    el.innerHTML = `<div class="alert alert-ok">✅ סכום זה עומד בתנאי ההצטרפות של כל בתי ההשקעות.</div>`;
+    el.innerHTML = `<div class="alert alert-ok">✅ סכום זה עומד בתנאי ההצטרפות של כל בתי ההשקעות. מצטרפים לאקסלנס עם ₪10,000+ מקבלים פטור מדמי ניהול לכל החיים! 🎉</div>`;
   }
 }
 
@@ -846,13 +849,16 @@ function calcHouse(h, params) {
   //   כלומר: תמיד משלמים לפחות ₪15, ועמלות מעל ₪15 מתווספות
   // שאר בתי ההשקעות: עמלות מסחר + דמי ניהול בנפרד
 
+  // אקסלנס: פטור לכל החיים אם הפקדה ראשונית >= 10,000
+  const excellenceFreeForever = h.mgmt_free_forever_above && initial >= h.mgmt_free_forever_above;
+
   // חישוב לפי שנים
   let total_trade = 0;
   let total_mgmt = 0;
   for (let yr = 1; yr <= years; yr++) {
     if (h.mgmt_offsets_trades) {
       // אקסלנס
-      if (yr <= h.mgmt_free_years) {
+      if (excellenceFreeForever || yr <= h.mgmt_free_years) {
         // פטור: משלמים רק עמלות מסחר רגילות
         total_trade += monthly_trade * 12;
       } else {
@@ -1026,11 +1032,12 @@ function calculate() {
     }
     const monthly_trade = monthly_il_fee + monthly_us_fee;
 
+    const excFreeForever = h.mgmt_free_forever_above && p.initial >= h.mgmt_free_forever_above;
     let cumulative = 0;
     const data = [];
     for (let yr = 1; yr <= p.years; yr++) {
       if (h.mgmt_offsets_trades) {
-        if (yr <= h.mgmt_free_years) {
+        if (excFreeForever || yr <= h.mgmt_free_years) {
           cumulative += monthly_trade * 12;
         } else {
           cumulative += h.mgmt_monthly_nis * 12;
